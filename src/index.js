@@ -2,6 +2,10 @@ import React, { useEffect, useMemo } from 'react'
 import ReactDOM from 'react-dom'
 import { StyledAsyncPopup } from './StyledAsyncPopup'
 
+function SimpleButton({ ...props }) {
+  return <button {...props} />
+}
+
 export const SimplePopup = ({ open, title, footer, content, onClose }) => {
   const container = useMemo(() => {
     if (!open) return null
@@ -23,9 +27,12 @@ export const SimplePopup = ({ open, title, footer, content, onClose }) => {
           <div className='async-popup__container'>
             <div className='async-popup__header'>
               {title && <div className='async-popup__title'>{title}</div>}
-              <button className='async-popup__close-btn' onClick={onClose}>
+              <SimpleButton
+                className='async-popup__close-btn'
+                onClick={onClose}
+              >
                 X
-              </button>
+              </SimpleButton>
             </div>
             <div className='async-popup__body'>{content}</div>
             {footer && <div className='async-popup__footer'>{footer}</div>}
@@ -39,61 +46,91 @@ export const SimplePopup = ({ open, title, footer, content, onClose }) => {
   )
 }
 
-export const createPopup = ({ ContentComp, api = {}, ...props }) => {
-  return new Promise((resolve) => {
-    const div = document.createElement('div')
-    document.body.append(div)
+export class AsyncPopup {
+  Component
+  Button
+  openName = 'open'
+  onCloseName = 'onClose'
+  contentName = 'content'
+  footerName = 'footer'
 
-    api.ok = async () => {
-      console.log('🚀 ~ file: index.js ~ line 53 ~ api.ok= ~ api', api)
-      if (api.onValidate) {
-        const invalid = await api.onValidate()
-        if (invalid) return
-      }
-      if (api.onConfirm) {
-        resolve(await api.onConfirm())
-      } else {
-        resolve(true)
-      }
-      ReactDOM.unmountComponentAtNode(div)
-    }
+  constructor({
+    Component = SimplePopup,
+    Button = SimpleButton,
+    open = 'open',
+    onClose = 'onClose',
+    content = 'content',
+    footer = 'footer'
+  } = {}) {
+    this.Component = Component
+    this.Button = Button
+    this.openName = open
+    this.onCloseName = onClose
+    this.contentName = content
+    this.footerName = footer
+  }
 
-    api.cancel = async () => {
-      if (api.onCancel) {
-        resolve(await api.onCancel())
-      } else {
-        resolve(false)
-      }
-      ReactDOM.unmountComponentAtNode(div)
-    }
+  createPopup({ ContentComp, api = {}, ...props }) {
+    return new Promise((resolve) => {
+      const div = document.createElement('div')
+      document.body.append(div)
 
-    ReactDOM.render(
-      <SimplePopup
-        open
-        onClose={api.cancel}
-        content={ContentComp ? <ContentComp api={api} /> : null}
-        {...props}
-      />,
-      div
+      api.ok = async () => {
+        if (api.onValidate) {
+          const invalid = await api.onValidate()
+          if (invalid) return
+        }
+        if (api.onConfirm) {
+          resolve(await api.onConfirm())
+        } else {
+          resolve(true)
+        }
+        ReactDOM.unmountComponentAtNode(div)
+      }
+
+      api.cancel = async () => {
+        if (api.onCancel) {
+          resolve(await api.onCancel())
+        } else {
+          resolve(false)
+        }
+        ReactDOM.unmountComponentAtNode(div)
+      }
+
+      const popupProps = {
+        [this.openName]: true,
+        [this.onCloseName]: api.cancel,
+        [this.contentName]: ContentComp ? <ContentComp api={api} /> : null
+      }
+
+      ReactDOM.render(<this.Component {...popupProps} {...props} />, div)
+    })
+  }
+
+  open({ ...props }) {
+    const api = {}
+
+    return this.createPopup({ api, ...props })
+  }
+
+  confirm({ ...props }) {
+    if (!this.footerName) return null
+    const api = {}
+    const footer = (
+      <React.Fragment>
+        <this.Button onClick={() => api.ok()}>OK</this.Button>
+        <this.Button onClick={() => api.cancel()}>Cancel</this.Button>
+      </React.Fragment>
     )
-  })
+    return this.createPopup({ [this.footerName]: footer, api, ...props })
+  }
+
+  alert({ ...props }) {
+    if (!this.footerName) return null
+    const api = {}
+    const footer = <this.Button onClick={() => api.cancel()}>OK</this.Button>
+    return this.createPopup({ [this.footerName]: footer, api, ...props })
+  }
 }
 
-const confirm = ({ ...props }) => {
-  const api = {}
-  const footer = (
-    <React.Fragment>
-      <button onClick={() => api.ok()}>OK</button>
-      <button onClick={() => api.cancel()}>Cancel</button>
-    </React.Fragment>
-  )
-  return createPopup({ footer, api, ...props })
-}
-
-const alert = ({ ...props }) => {
-  const api = {}
-  const footer = <button onClick={() => api.cancel()}>OK</button>
-  return createPopup({ footer, api, ...props })
-}
-
-export const Popup = { confirm, alert }
+export const Popup = new AsyncPopup()
