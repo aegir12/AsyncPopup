@@ -2,7 +2,6 @@ import React, { useState } from 'react'
 import { Modal, Button, Input, Checkbox, Drawer } from 'antd'
 
 import { SimplePopup, Popup, AsyncPopup } from 'async-popup'
-import 'async-popup/dist/index.css'
 import 'antd/dist/antd.css'
 
 const AntdPopup = new AsyncPopup({
