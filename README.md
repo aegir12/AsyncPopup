@@ -7,7 +7,7 @@ This library is not called 'reactive', but you can implement your logic within a
 ## Usage
 
 ```jsx
-import { SimplePopup, Popup, AsyncPopup } from 'async-popup'
+import { SimplePopup, Popup, AsyncPopup, useConfirm } from 'async-popup'
 
 // optional
 const AntdPopup = new AsyncPopup({
@@ -28,9 +28,16 @@ const AntdDrawer = new AsyncPopup({
 
 const App = () => {
   const [open, setOpen] = useState(false)
+  const confirm = useConfirm();
   return (
     <div>
       <div>
+        <button onClick={async () => { 
+          const result = await confirm({ title: "Hooked Confirm", content: "Is Work?" })
+          alert("result: " + result)
+          }}
+        > 
+        hook? </button>
         <button onClick={() => setOpen((prev) => !prev)}>
           open simple popup
         </button>
