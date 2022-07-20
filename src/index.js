@@ -19,8 +19,6 @@ export const SimplePopup = ({ open, title, footer, content, onClose }) => {
      }
   }, [])
 
-  if (!open) return null
-
   return ReactDOM.createPortal(
     open ? (
       <StyledAsyncPopup>
