@@ -230,13 +230,6 @@ const App = () => {
         >
           Antd confirm select app
         </button>
-        <SimplePopup
-          open={open}
-          onClose={() => setOpen((prev) => !prev)}
-          title='title'
-          content='content'
-          footer='footer'
-        />
       </div>
       <div>
         <button
@@ -283,13 +276,6 @@ const App = () => {
         >
           Antd Drawer select app
         </button>
-        <SimplePopup
-          open={open}
-          onClose={() => setOpen((prev) => !prev)}
-          title='title'
-          content='content'
-          footer='footer'
-        />
       </div>
     </div>
   )

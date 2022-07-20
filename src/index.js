@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useMemo } from 'react'
 import ReactDOM from 'react-dom'
 import { StyledAsyncPopup } from './StyledAsyncPopup'
 
@@ -7,48 +7,35 @@ function SimpleButton({ ...props }) {
 }
 
 export const SimplePopup = ({ open, title, footer, content, onClose }) => {
-  const container = useRef()
+  const container = useMemo(() => {
+    const div = document.createElement('div')
+    document.body.append(div)
+    return div
+  }, [])
 
   useEffect(() => {
-    if (!open) {
-      container.current = null
-    } else {
-      const div = document.createElement('div')
-      document.body.append(div)
-      container.current = div
-    }
-
     return () => {
-      if (container.current) container.current.remove()
+      if (container) container.remove()
     }
-  })
+  }, [])
 
   if (!open) return null
 
-  return (
-    open && container.current ? (
-      ReactDOM.createPortal(
-        <StyledAsyncPopup>
-          <div className='async-popup__backdrop'>
-            <div className='async-popup__container'>
-              <div className='async-popup__header'>
-                {title && <div className='async-popup__title'>{title}</div>}
-                <SimpleButton
-                  className='async-popup__close-btn'
-                  onClick={onClose}
-                >
-                  X
-                </SimpleButton>
-              </div>
-              <div className='async-popup__body'>{content}</div>
-              {footer && <div className='async-popup__footer'>{footer}</div>}
-            </div>
+  return ReactDOM.createPortal(
+    <StyledAsyncPopup>
+      <div className='async-popup__backdrop'>
+        <div className='async-popup__container'>
+          <div className='async-popup__header'>
+            {title && <div className='async-popup__title'>{title}</div>}
+            <SimpleButton className='async-popup__close-btn' onClick={onClose}>
+              X
+            </SimpleButton>
           </div>
-        </StyledAsyncPopup>
-      )
-    ) : (
-      <React.Fragment> </React.Fragment>
-    ),
+          <div className='async-popup__body'>{content}</div>
+          {footer && <div className='async-popup__footer'>{footer}</div>}
+        </div>
+      </div>
+    </StyledAsyncPopup>,
     container
   )
 }
