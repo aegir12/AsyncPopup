@@ -140,4 +140,74 @@ export class AsyncPopup {
   }
 }
 
+export function usePopup({
+  open = 'open',
+  onClose = 'onClose',
+  content = 'content',
+  footer = 'footer'
+}) {
+  return ({ Component = SimplePopup, api = {}, ...props }) =>
+    new Promise((resolve) => {
+      const div = document.createElement('div')
+      document.body.append(div)
+
+      api.ok = async () => {
+        if (api.onValidate) {
+          const invalid = await api.onValidate()
+          if (invalid) return
+        }
+        if (api.onConfirm) {
+          resolve(await api.onConfirm())
+        } else {
+          resolve(true)
+        }
+        ReactDOM.unmountComponentAtNode(div)
+      }
+
+      api.cancel = async () => {
+        if (api.onCancel) {
+          resolve(await api.onCancel())
+        } else {
+          resolve(false)
+        }
+        ReactDOM.unmountComponentAtNode(div)
+      }
+
+      const popupProps = {
+        [openName]: true,
+        [onCloseName]: api.cancel,
+        [contentName]: ContentComp ? <ContentComp api={api} /> : null
+      }
+
+      ReactDOM.render(<Component {...popupProps} {...props} />, div)
+    })
+}
+
+export function useConfirm({
+  footerName = 'footer',
+  Button = SimpleButton,
+  ...props
+}) {
+  if (!footerName) return null
+  const api = {}
+  const footer = (
+    <React.Fragment>
+      <Button onClick={() => api.ok()}>OK</Button>
+      <Button onClick={() => api.cancel()}>Cancel</Button>
+    </React.Fragment>
+  )
+  return usePopup({ [footerName]: footer, api, ...props })
+}
+
+export function useAlert({
+  footerName = 'footer',
+  Button = SimpleButton,
+  ...props
+}) {
+  if (!footerName) return null
+  const api = {}
+  const footer = <Button onClick={() => api.cancel()}>OK</Button>
+  return this.createPopup({ [this.footerName]: footer, api, ...props })
+}
+
 export const Popup = new AsyncPopup()
