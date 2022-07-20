@@ -15,8 +15,10 @@ export const SimplePopup = ({ open, title, footer, content, onClose }) => {
   }, [open])
 
   useEffect(() => {
-    return () => { }
-  })
+    return () => { 
+      div.remove();
+     }
+  }, [])
 
   if (!open) return null
 
