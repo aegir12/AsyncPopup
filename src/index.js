@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef } from 'react'
+import React, { useEffect, useRef } from 'react'
 import ReactDOM from 'react-dom'
 import { StyledAsyncPopup } from './StyledAsyncPopup'
 
@@ -26,7 +26,7 @@ export const SimplePopup = ({ open, title, footer, content, onClose }) => {
   if (!open) return null
 
   return (
-    open && container.currnet ? (
+    open && container.current ? (
       ReactDOM.createPortal(
         <StyledAsyncPopup>
           <div className='async-popup__backdrop'>
