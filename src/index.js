@@ -8,11 +8,10 @@ function SimpleButton({ ...props }) {
 
 export const SimplePopup = ({ open, title, footer, content, onClose }) => {
   const container = useMemo(() => {
-    if (!open) return null
     const div = document.createElement('div')
     document.body.append(div)
     return div
-  }, [open])
+  }, [])
 
   useEffect(() => {
     return () => { 
